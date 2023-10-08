@@ -1,4 +1,5 @@
-import plateform from "./game_plateforme.js";
+import {plateform} from "./game_plateforme.js";
+
 
 const canvas = document.getElementById('canva');
 const ctx = canvas.getContext('2d');
@@ -18,11 +19,10 @@ class Map {
 
   initializeMap() {
     const map = [];
-
     for (let row = 0; row < numRows; row++) {
       const rowArray = [];
       for (let col = 0; col < numCols; col++) {
-        if (row === 0 || row === numRows - 1 || col === 0 || col === numCols - 1) {
+        if (row === numRows - 1 || (col === 0 || col === numCols - 1)) {
           rowArray.push(1);
         } else {
           rowArray.push(0);
@@ -30,7 +30,6 @@ class Map {
       }
       map.push(rowArray);
     }
-
     return map;
   }
 
@@ -84,7 +83,6 @@ class Player {
   left() {
     this.velocity.x = -5;
   }
-  
   update() {
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
@@ -93,11 +91,7 @@ class Player {
       this.position.y = canvas.height - this.height / 2;
       this.velocity.y = 0;
       this.isJumping = false;
-    } else if (this.position.y - this.height / 2 <= 0) {
-      this.position.y = this.height / 2;
-      this.velocity.y = 0;
-      this.isJumping = false;
-    }
+    } 
     if(this.position.x + this.width /2 >= canvas.width){
       this.position.x = canvas.width - this.width /2;
       this.isJumping = true;
@@ -109,8 +103,20 @@ class Player {
     this.velocity.y += gravity;
   }
 }
+const platforms = [
+  new plateform({ x: 10, y: 1200 }),
+  new plateform({ x: 100, y: 1200 }),
+  new plateform({ x: 200, y: 1200 }),
+  new plateform({ x: 20, y: 1000 }),
+  new plateform({ x: 200, y: 1000 }),
+  new plateform({ x: 400, y: 1000 })
+];
 
-const spwnplateform = new plateform(20, 30, { x: 10, y: 1200 })
+function drawPlatforms() {
+  for (const platform of platforms) {
+    platform.draw(ctx);
+  }
+}
 const gameMap = new Map();
 const player = new Player();
 function updateGame() {
@@ -118,8 +124,11 @@ function updateGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   gameMap.draw();
   player.draw();
+  drawPlatforms();
+  for (const platform of platforms) {
+    platform.checkCollisionWithPlayer(player);
+  }
   requestAnimationFrame(updateGame);
-  spwnplateform.draw(ctx);
 }
 
 addEventListener('keydown', (e) => {
